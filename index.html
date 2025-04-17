@@ -31,6 +31,29 @@
             margin: 20px;
             color: #666;
         }
+
+        #filename-editor {
+            display: none;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+
+        #filename-input {
+            padding: 10px;
+            width: 70%;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #save-btn {
+            padding: 10px 20px;
+            background: #2d89ef;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -39,14 +62,28 @@
         <input type="file" id="fileElem" multiple accept="*/*" />
         <label for="fileElem">or click to choose file</label>
     </div>
+    <div id="filename-editor">
+        <input type="text" id="filename-input" placeholder="Enter file name" />
+        <button id="save-btn" onclick="saveFilename()">Save to Database</button>
+    </div>
     <p id="status"></p>
 
     <script>
-        const cloudName = "YOUR_CLOUD_NAME";
-        const uploadPreset = "YOUR_UPLOAD_PRESET";
+        // Cloudinary Config
+        const cloudName = "dl401kvum";
+        const uploadPreset = "ml_default";
+
+        // Adalo API Config
+        const adaloApiKey = "e8963sxr2kh3a0hd4uy3owr65";
+        const adaloAppId = "dcf10341-751c-4114-864b-facccc43bb15";
+        const adaloCollectionId = "t_ckpmqplbdpmkemcnfln6ttgbq"; // Collection ID for "File"
+
+        let uploadedFileUrl = '';
+        let originalFileName = '';
 
         function uploadFile(file) {
             document.getElementById("status").innerText = "Uploading...";
+            originalFileName = file.name;
 
             const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
             const formData = new FormData();
@@ -59,14 +96,10 @@
             })
             .then((res) => res.json())
             .then((data) => {
-                // Send BOTH file name and URL to Adalo
-                if (window.Adalo) {
-                    window.Adalo.receiveData({
-                        fileUrl: data.secure_url,
-                        fileName: file.name // Add this line
-                    });
-                }
-                document.getElementById("status").innerText = "Upload successful!";
+                uploadedFileUrl = data.secure_url;
+                document.getElementById("filename-input").value = originalFileName;
+                document.getElementById("filename-editor").style.display = 'block';
+                document.getElementById("status").innerText = "Upload complete! Enter a file name and click save.";
             })
             .catch((error) => {
                 console.error("Upload failed:", error);
@@ -74,7 +107,42 @@
             });
         }
 
-        // Drag-and-drop handlers (same as before)
+        function saveFilename() {
+            const fileName = document.getElementById("filename-input").value || originalFileName;
+            document.getElementById("status").innerText = "Saving to database...";
+
+            // Adalo API Endpoint
+            const url = `https://api.adaloadmin.com/v1/apps/${adaloAppId}/collections/${adaloCollectionId}/records`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adaloApiKey}`
+                },
+                body: JSON.stringify({
+                    data: {
+                        "File name": fileName,
+                        "URL": uploadedFileUrl
+                    }
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.id) {
+                    document.getElementById("status").innerText = "File saved successfully!";
+                    document.getElementById("filename-editor").style.display = 'none';
+                } else {
+                    throw new Error('Save failed');
+                }
+            })
+            .catch(error => {
+                console.error("Save error:", error);
+                document.getElementById("status").innerText = "Failed to save to database!";
+            });
+        }
+
+        // Drag-and-drop handlers
         const dropArea = document.getElementById("drop-area");
         dropArea.addEventListener("dragover", (e) => e.preventDefault());
         dropArea.addEventListener("dragleave", () => dropArea.style.borderColor = "#ccc");
