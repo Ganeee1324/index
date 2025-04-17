@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="dropZone" style="border: 2px dashed #ccc; padding: 20px; text-align: center;">
+    Drop files here
+  </div>
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+      dropZone.addEventListener(event, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      });
+    });
+
+    // Handle file drop
+    dropZone.addEventListener('drop', (e) => {
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        // Upload file to your storage (e.g., Firebase, AWS S3)
+        // Replace with your upload logic
+        const fileUrl = 'https://example.com/uploaded-file.jpg';
+        // Send URL back to Adalo
+        window.parent.postMessage({ type: 'fileUploaded', url: fileUrl }, '*');
+      }
+    });
+  </script>
+</body>
+</html>
