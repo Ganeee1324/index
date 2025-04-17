@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>Adalo File Uploader</title>
     <style>
         #drop-area {
@@ -36,6 +37,7 @@
             display: none;
             margin: 20px auto;
             max-width: 400px;
+            text-align: center;
         }
 
         #filename-input {
@@ -76,7 +78,7 @@
         // Adalo API Config
         const adaloApiKey = "0mneppblcx77xt4slxkh70hd5";
         const adaloAppId = "dcf10341-751c-4114-864b-facccc43bb15";
-        const adaloCollectionId = "t_ckpmqplbdpmkemcnfln6ttgbq"; // Collection ID for "File"
+        const adaloCollectionId = "t_ckpmqplbdpmkemcnfln6ttgbq";
 
         let uploadedFileUrl = '';
         let originalFileName = '';
@@ -94,14 +96,14 @@
                 method: "POST",
                 body: formData
             })
-            .then((res) => res.json())
-            .then((data) => {
+            .then(res => res.json())
+            .then(data => {
                 uploadedFileUrl = data.secure_url;
                 document.getElementById("filename-input").value = originalFileName;
                 document.getElementById("filename-editor").style.display = 'block';
                 document.getElementById("status").innerText = "Upload complete! Enter a file name and click save.";
             })
-            .catch((error) => {
+            .catch(error => {
                 console.error("Upload failed:", error);
                 document.getElementById("status").innerText = "Upload failed!";
             });
@@ -110,10 +112,10 @@
         function saveFilename() {
             const fileName = document.getElementById("filename-input").value || originalFileName;
             document.getElementById("status").innerText = "Saving to database...";
-        
-            // Adalo API Endpoint
-            const url = `https://api.adalo.com/v0/apps/${adaloAppId}/collections/${adaloCollectionId}/records`;
-        
+
+            // Endpoint corretto senza '/records' e senza wrapper "data"
+            const url = `https://api.adalo.com/v0/apps/${adaloAppId}/collections/${adaloCollectionId}`;
+
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -121,10 +123,8 @@
                     'Authorization': `Bearer ${adaloApiKey}`
                 },
                 body: JSON.stringify({
-                    data: { // <--- Added required "data" wrapper
-                        "File name": fileName,
-                        "URL": uploadedFileUrl
-                    }
+                    filename: fileName,
+                    url: uploadedFileUrl
                 })
             })
             .then(response => {
@@ -149,15 +149,21 @@
 
         // Drag-and-drop handlers
         const dropArea = document.getElementById("drop-area");
-        dropArea.addEventListener("dragover", (e) => e.preventDefault());
-        dropArea.addEventListener("dragleave", () => dropArea.style.borderColor = "#ccc");
-        dropArea.addEventListener("drop", (e) => {
+        dropArea.addEventListener("dragover", e => {
             e.preventDefault();
+            dropArea.style.borderColor = "#666";
+        });
+        dropArea.addEventListener("dragleave", () => {
+            dropArea.style.borderColor = "#ccc";
+        });
+        dropArea.addEventListener("drop", e => {
+            e.preventDefault();
+            dropArea.style.borderColor = "#ccc";
             const files = e.dataTransfer.files;
             if (files.length) uploadFile(files[0]);
         });
 
-        document.getElementById("fileElem").addEventListener("change", (e) => {
+        document.getElementById("fileElem").addEventListener("change", e => {
             if (e.target.files[0]) uploadFile(e.target.files[0]);
         });
     </script>
