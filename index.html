@@ -112,7 +112,7 @@
             document.getElementById("status").innerText = "Saving to database...";
 
             // Adalo API Endpoint
-            const url = `https://api.adaloadmin.com/v1/apps/${adaloAppId}/collections/${adaloCollectionId}/records`;
+            const url = `https://api.adalo.com/v0/apps/${adaloAppId}/collections/${adaloCollectionId}/records`;
 
             fetch(url, {
                 method: 'POST',
