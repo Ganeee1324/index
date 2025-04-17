@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Drag-and-Drop Uploader</title>
+    <title>Adalo File Uploader</title>
     <style>
         #drop-area {
             border: 2px dashed #ccc;
@@ -13,36 +13,22 @@
             font-family: sans-serif;
         }
 
-        #fileElem {
-            display: none;
-        }
+        #fileElem { display: none; }
 
         label {
-            display: inline-block;
-            margin-top: 10px;
             background: #2d89ef;
             color: white;
             padding: 10px 20px;
             border-radius: 10px;
             cursor: pointer;
-        }
-
-        #fileNameInput {
-            width: 80%;
-            margin: 20px auto;
-            padding: 10px;
-            display: block;
-            text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: sans-serif;
+            margin-top: 10px;
+            display: inline-block;
         }
 
         #status {
             text-align: center;
             font-family: sans-serif;
             margin: 20px;
-            word-break: break-all;
             color: #666;
         }
     </style>
@@ -53,18 +39,13 @@
         <input type="file" id="fileElem" multiple accept="*/*" />
         <label for="fileElem">or click to choose file</label>
     </div>
-    
-    <input type="text" id="fileNameInput" readonly placeholder="Uploaded file name" />
     <p id="status"></p>
 
     <script>
-        // Replace with your Cloudinary credentials
-        const cloudName = "dl401kvum";
-        const uploadPreset = "ml_default";
+        const cloudName = "YOUR_CLOUD_NAME";
+        const uploadPreset = "YOUR_UPLOAD_PRESET";
 
         function uploadFile(file) {
-            // Update file name immediately
-            document.getElementById("fileNameInput").value = file.name;
             document.getElementById("status").innerText = "Uploading...";
 
             const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
@@ -78,47 +59,33 @@
             })
             .then((res) => res.json())
             .then((data) => {
-                const fileUrl = data.secure_url;
-                document.getElementById("status").innerText = "Upload successful! URL: " + fileUrl;
-                
-                // Send to Adalo
+                // Send BOTH file name and URL to Adalo
                 if (window.Adalo) {
-                    window.Adalo.receiveData({ fileUrl });
-                document.getElementById("status").innerText += "\n(URL sent to Adalo)";
+                    window.Adalo.receiveData({
+                        fileUrl: data.secure_url,
+                        fileName: file.name // Add this line
+                    });
                 }
+                document.getElementById("status").innerText = "Upload successful!";
             })
             .catch((error) => {
                 console.error("Upload failed:", error);
                 document.getElementById("status").innerText = "Upload failed!";
-                document.getElementById("fileNameInput").value = "";
             });
         }
 
-        // Drag-and-drop handlers
+        // Drag-and-drop handlers (same as before)
         const dropArea = document.getElementById("drop-area");
-
-        dropArea.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            dropArea.style.borderColor = "green";
-        });
-
-        dropArea.addEventListener("dragleave", () => {
-            dropArea.style.borderColor = "#ccc";
-        });
-
+        dropArea.addEventListener("dragover", (e) => e.preventDefault());
+        dropArea.addEventListener("dragleave", () => dropArea.style.borderColor = "#ccc");
         dropArea.addEventListener("drop", (e) => {
             e.preventDefault();
-            dropArea.style.borderColor = "#ccc";
             const files = e.dataTransfer.files;
-            if (files.length) {
-                uploadFile(files[0]);
-            }
+            if (files.length) uploadFile(files[0]);
         });
 
-        // File input handler
         document.getElementById("fileElem").addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if (file) uploadFile(file);
+            if (e.target.files[0]) uploadFile(e.target.files[0]);
         });
     </script>
 </body>
