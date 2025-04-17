@@ -27,11 +27,23 @@
             cursor: pointer;
         }
 
+        #fileNameInput {
+            width: 80%;
+            margin: 20px auto;
+            padding: 10px;
+            display: block;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: sans-serif;
+        }
+
         #status {
             text-align: center;
             font-family: sans-serif;
             margin: 20px;
             word-break: break-all;
+            color: #666;
         }
     </style>
 </head>
@@ -41,14 +53,20 @@
         <input type="file" id="fileElem" multiple accept="*/*" />
         <label for="fileElem">or click to choose file</label>
     </div>
+    
+    <input type="text" id="fileNameInput" readonly placeholder="Uploaded file name" />
     <p id="status"></p>
 
     <script>
-        // Replace these with your Cloudinary credentials
+        // Replace with your Cloudinary credentials
         const cloudName = "dl401kvum";
         const uploadPreset = "ml_default";
 
         function uploadFile(file) {
+            // Update file name immediately
+            document.getElementById("fileNameInput").value = file.name;
+            document.getElementById("status").innerText = "Uploading...";
+
             const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
             const formData = new FormData();
             formData.append("file", file);
@@ -61,16 +79,18 @@
             .then((res) => res.json())
             .then((data) => {
                 const fileUrl = data.secure_url;
-                document.getElementById("status").innerText = "Uploaded: " + fileUrl;
-
-                // Send file URL back to Adalo
+                document.getElementById("status").innerText = "Upload successful! URL: " + fileUrl;
+                
+                // Send to Adalo
                 if (window.Adalo) {
                     window.Adalo.receiveData({ fileUrl });
+                document.getElementById("status").innerText += "\n(URL sent to Adalo)";
                 }
             })
             .catch((error) => {
                 console.error("Upload failed:", error);
                 document.getElementById("status").innerText = "Upload failed!";
+                document.getElementById("fileNameInput").value = "";
             });
         }
 
@@ -97,7 +117,8 @@
 
         // File input handler
         document.getElementById("fileElem").addEventListener("change", (e) => {
-            uploadFile(e.target.files[0]);
+            const file = e.target.files[0];
+            if (file) uploadFile(file);
         });
     </script>
 </body>
