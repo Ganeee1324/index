@@ -75,8 +75,8 @@
         const cloudName = "dl401kvum";
         const uploadPreset = "ml_default";
 
-        // Proxy API (Cloudflare Worker)
-        const proxyUrl = "https://floral-river-57ad.noteinfuga.workers.dev/"; // <- Replace this
+        // Make.com Webhook URL
+        const makeWebhookUrl = "https://hook.eu2.make.com/3xt29u2tfhhtu743tai3u505nkdxsskt";
 
         let uploadedFileUrl = '';
         let originalFileName = '';
@@ -109,9 +109,9 @@
 
         function saveFilename() {
             const fileName = document.getElementById("filename-input").value || originalFileName;
-            document.getElementById("status").innerText = "Saving to database...";
+            document.getElementById("status").innerText = "Sending to Make.com...";
 
-            fetch(proxyUrl, {
+            fetch(makeWebhookUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -121,14 +121,13 @@
                     url: uploadedFileUrl
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.id || data.url) {
-                    document.getElementById("status").innerText = "File saved successfully!";
-                    document.getElementById("filename-editor").style.display = 'none';
-                } else {
-                    throw new Error('Save failed: ' + JSON.stringify(data));
-                }
+            .then(response => {
+                if (!response.ok) throw new Error("Make webhook error");
+                return response.text();
+            })
+            .then(() => {
+                document.getElementById("status").innerText = "File saved successfully!";
+                document.getElementById("filename-editor").style.display = 'none';
             })
             .catch(error => {
                 console.error("Save error:", error);
