@@ -75,10 +75,8 @@
         const cloudName = "dl401kvum";
         const uploadPreset = "ml_default";
 
-        // Adalo API Config
-        const adaloApiKey = "0mneppblcx77xt4slxkh70hd5";
-        const adaloAppId = "dcf10341-751c-4114-864b-facccc43bb15";
-        const adaloCollectionId = "t_ckpmqplbdpmkemcnfln6ttgbq";
+        // Proxy API (Cloudflare Worker)
+        const proxyUrl = "https://floral-river-57ad.noteinfuga.workers.dev/"; // <- Replace this
 
         let uploadedFileUrl = '';
         let originalFileName = '';
@@ -113,28 +111,19 @@
             const fileName = document.getElementById("filename-input").value || originalFileName;
             document.getElementById("status").innerText = "Saving to database...";
 
-            // Endpoint corretto senza '/records' e senza wrapper "data"
-            const url = `https://api.adalo.com/v0/apps/${adaloAppId}/collections/${adaloCollectionId}`;
-
-            fetch(url, {
+            fetch(proxyUrl, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${adaloApiKey}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     filename: fileName,
                     url: uploadedFileUrl
                 })
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                if (data.id) {
+                if (data.id || data.url) {
                     document.getElementById("status").innerText = "File saved successfully!";
                     document.getElementById("filename-editor").style.display = 'none';
                 } else {
