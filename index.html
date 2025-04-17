@@ -110,10 +110,10 @@
         function saveFilename() {
             const fileName = document.getElementById("filename-input").value || originalFileName;
             document.getElementById("status").innerText = "Saving to database...";
-
+        
             // Adalo API Endpoint
             const url = `https://api.adalo.com/v0/apps/${adaloAppId}/collections/${adaloCollectionId}/records`;
-
+        
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -121,24 +121,29 @@
                     'Authorization': `Bearer ${adaloApiKey}`
                 },
                 body: JSON.stringify({
-                    data: {
+                    data: { // <--- Added required "data" wrapper
                         "File name": fileName,
                         "URL": uploadedFileUrl
                     }
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.id) {
                     document.getElementById("status").innerText = "File saved successfully!";
                     document.getElementById("filename-editor").style.display = 'none';
                 } else {
-                    throw new Error('Save failed');
+                    throw new Error('Save failed: ' + JSON.stringify(data));
                 }
             })
             .catch(error => {
                 console.error("Save error:", error);
-                document.getElementById("status").innerText = "Failed to save to database!";
+                document.getElementById("status").innerText = "Error: " + error.message;
             });
         }
 
