@@ -1,32 +1,104 @@
 <!DOCTYPE html>
 <html>
-<body>
-  <div id="dropZone" style="border: 2px dashed #ccc; padding: 20px; text-align: center;">
-    Drop files here
-  </div>
-  <script>
-    const dropZone = document.getElementById('dropZone');
-    
-    // Prevent default drag behaviors
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
-      dropZone.addEventListener(event, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    });
+<head>
+    <title>Drag-and-Drop Uploader</title>
+    <style>
+        #drop-area {
+            border: 2px dashed #ccc;
+            border-radius: 20px;
+            width: 90%;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+            font-family: sans-serif;
+        }
 
-    // Handle file drop
-    dropZone.addEventListener('drop', (e) => {
-      const files = e.dataTransfer.files;
-      if (files.length > 0) {
-        const file = files[0];
-        // Upload file to your storage (e.g., Firebase, AWS S3)
-        // Replace with your upload logic
-        const fileUrl = 'https://example.com/uploaded-file.jpg';
-        // Send URL back to Adalo
-        window.parent.postMessage({ type: 'fileUploaded', url: fileUrl }, '*');
-      }
-    });
-  </script>
+        #fileElem {
+            display: none;
+        }
+
+        label {
+            display: inline-block;
+            margin-top: 10px;
+            background: #2d89ef;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        #status {
+            text-align: center;
+            font-family: sans-serif;
+            margin: 20px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div id="drop-area">
+        <h3>Drag your file here</h3>
+        <input type="file" id="fileElem" multiple accept="*/*" />
+        <label for="fileElem">or click to choose file</label>
+    </div>
+    <p id="status"></p>
+
+    <script>
+        // Replace these with your Cloudinary credentials
+        const cloudName = "dl401kvum";
+        const uploadPreset = "ml_default";
+
+        function uploadFile(file) {
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/upload`;
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
+
+            fetch(url, {
+                method: "POST",
+                body: formData
+            })
+            .then((res) => res.json())
+            .then((data) => {
+                const fileUrl = data.secure_url;
+                document.getElementById("status").innerText = "Uploaded: " + fileUrl;
+
+                // Send file URL back to Adalo
+                if (window.Adalo) {
+                    window.Adalo.receiveData({ fileUrl });
+                }
+            })
+            .catch((error) => {
+                console.error("Upload failed:", error);
+                document.getElementById("status").innerText = "Upload failed!";
+            });
+        }
+
+        // Drag-and-drop handlers
+        const dropArea = document.getElementById("drop-area");
+
+        dropArea.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = "green";
+        });
+
+        dropArea.addEventListener("dragleave", () => {
+            dropArea.style.borderColor = "#ccc";
+        });
+
+        dropArea.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = "#ccc";
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                uploadFile(files[0]);
+            }
+        });
+
+        // File input handler
+        document.getElementById("fileElem").addEventListener("change", (e) => {
+            uploadFile(e.target.files[0]);
+        });
+    </script>
 </body>
 </html>
