@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Adalo File Uploader</title>
     <style>
-        /* Reset default margins and padding */
         * {
             margin: 0;
             padding: 0;
@@ -19,25 +18,36 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 15px;
+            background: #f8f9fa;
         }
 
         #drop-area {
-            border: 2px dashed #ccc;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
+            border: 2px dashed #ced4da;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 280px;
             margin: 10px auto;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
-            font-family: sans-serif;
-            position: relative;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: border-color 0.2s;
+            background: white;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #drop-area:hover {
+            border-color: #2d89ef;
         }
 
         #drop-area h3 {
-            font-size: 14px;
-            margin: 10px 0;
-            color: #666;
+            font-size: 12px;
+            margin: 8px 0;
+            color: #6c757d;
+            font-weight: 500;
         }
 
         #fileElem { display: none; }
@@ -45,57 +55,76 @@
         label {
             background: #2d89ef;
             color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
             display: inline-block;
-            font-size: 13px;
-            margin: 5px 0;
+            font-size: 12px;
+            margin: 4px 0;
+            transition: background 0.2s;
+            width: fit-content;
+            align-self: center;
+        }
+
+        label:hover {
+            background: #1a6ec0;
         }
 
         #status {
             text-align: center;
             font-family: sans-serif;
             margin: 10px;
-            color: #666;
-            font-size: 13px;
-            width: 90%;
-            max-width: 400px;
+            color: #6c757d;
+            font-size: 12px;
+            width: 100%;
+            max-width: 280px;
+            line-height: 1.4;
         }
 
         #filename-editor {
             display: none;
             margin: 10px auto;
-            max-width: 400px;
+            max-width: 280px;
             text-align: center;
-            width: 90%;
+            width: 100%;
         }
 
         #filename-input {
             padding: 8px;
             width: 100%;
-            margin: 5px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 13px;
+            margin: 6px 0;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            font-size: 12px;
+            outline: none;
+        }
+
+        #filename-input:focus {
+            border-color: #2d89ef;
+            box-shadow: 0 0 0 2px rgba(45, 137, 239, 0.2);
         }
 
         #save-btn {
-            padding: 8px 15px;
+            padding: 8px 12px;
             background: #2d89ef;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             width: 100%;
-            margin: 5px 0;
+            margin: 6px 0;
+            transition: background 0.2s;
+        }
+
+        #save-btn:hover {
+            background: #1a6ec0;
         }
     </style>
 </head>
 <body>
     <div id="drop-area">
-        <h3>Drag your file here</h3>
+        <h3>Drag file here or</h3>
         <input type="file" id="fileElem" multiple accept="*/*" />
         <label for="fileElem">Choose File</label>
     </div>
@@ -105,8 +134,8 @@
     </div>
     <p id="status"></p>
 
+    <!-- JavaScript remains exactly the same as previous version -->
     <script>
-        // (Keep the original JavaScript code exactly the same)
         // Cloudinary Config
         const cloudName = "dl401kvum";
         const uploadPreset = "ml_default";
@@ -175,14 +204,14 @@
         const dropArea = document.getElementById("drop-area");
         dropArea.addEventListener("dragover", e => {
             e.preventDefault();
-            dropArea.style.borderColor = "#666";
+            dropArea.style.borderColor = "#2d89ef";
         });
         dropArea.addEventListener("dragleave", () => {
-            dropArea.style.borderColor = "#ccc";
+            dropArea.style.borderColor = "#ced4da";
         });
         dropArea.addEventListener("drop", e => {
             e.preventDefault();
-            dropArea.style.borderColor = "#ccc";
+            dropArea.style.borderColor = "#ced4da";
             const files = e.dataTransfer.files;
             if (files.length) uploadFile(files[0]);
         });
